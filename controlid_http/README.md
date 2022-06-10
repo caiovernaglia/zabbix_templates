@@ -1,4 +1,4 @@
-#Template para equipamentos Control ID
+# Template para equipamentos Control ID
 
 Inserir as credenciais de login do equipamento nas Macros {$USUARIO} e {$SENHA}
 
@@ -6,19 +6,20 @@ Os equipamentos utilizam informações básicas dos equipamentos através do Con
 
 As checagens especificas para cada equipamento são definidas no template próprio
 
-##Equipamentos Integrados:
+## Equipamentos Integrados:
 * ID Access PRO
 * ID Block
 * ID Box
 * ID Flex
 * ID Face
 
-##Templates Linkados
+## Templates Linkados
 * ICMP Checks
 
-##Items coletados:
-###Control ID - Base by HTTP
+## Items coletados:
+### Control ID - Base by HTTP
 |Application|Name|Type|Key|
+|-----------|----|----|---|
 |Status|ICMP Loss|Simple Check|icmppingloss|
 |Status|ICMP Ping Status|Simple Check|icmpping|
 |Status|ICMP Response Time|Simple Check|icmppingsec|
