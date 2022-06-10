@@ -37,7 +37,7 @@ As checagens especificas para cada equipamento são definidas no template própr
 |Capacity|Quantidade Users|Dependent Item|cid.qtde_users|
 |Capacity|Quantidade Cards|Dependent Item|cid.qte_cards|
 
-##TODO
+## TODO
 Atualmente a coleta está sendo feita por script que realiza login e retorna a session toda vez que é feito uma coleta aos itens RAW
 Estudando como alterar usando LLD no login e criação de itens prototypes para os RAW (conforme palestra de Jonathan B. Curty na Zabbix Summit Brazil 2022)
 
