@@ -1,0 +1,836 @@
+zabbix_export:
+  version: '5.4'
+  date: '2022-06-10T12:22:47Z'
+  groups:
+    -
+      uuid: 61bb5fd5b85b4b639119e33f57ddff23
+      name: Equipamentos/CFTV/Cameras/Intelbras
+  templates:
+    -
+      uuid: ac9c98eed81c4b2c942f626698a15ffa
+      template: 'Intelbras camera by HTTP'
+      name: 'Intelbras camera by HTTP'
+      description: |
+        Template para a linha de câmeras IP da Intelbras
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'ICMP Checks'
+      groups:
+        -
+          name: Equipamentos/CFTV/Cameras/Intelbras
+      items:
+        -
+          uuid: 38d46fac973b4f9e9f28dd1b430e798a
+          name: 'HTTP API/CGI Version'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_cgi_version
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: LTRIM
+              parameters:
+                - version=
+          url: 'http://{HOST.CONN}/cgi-bin/IntervideoManager.cgi?action=getVersion&Name=CGI'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 86ddb0b0b41147a39ac2408793a90a2f
+          name: 'Channel Title'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_channel_title
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          inventory_link: NAME
+          preprocessing:
+            -
+              type: STR_REPLACE
+              parameters:
+                - 'table.ChannelTitle[0].Name='
+                - ''
+          url: 'http://{HOST.CONN}/cgi-bin/configManager.cgi?action=getConfig&name=ChannelTitle'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 81aa73d98f624452ad55177bacc45e05
+          name: 'Current Time'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_current_time
+          delay: 1h
+          units: unixtime
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: STR_REPLACE
+              parameters:
+                - result=
+                - ''
+            -
+              type: CSV_TO_JSON
+              parameters:
+                - ''
+                - ''
+                - '0'
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[0].1'
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return Date.parse(value)+10800000;'
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.001'
+          url: 'http://{HOST.CONN}/cgi-bin/global.cgi?action=getCurrentTime'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: ec63ea1696274a7c92ca77b90432dc3d
+          name: 'Device Type'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_device_type
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          inventory_link: TYPE
+          preprocessing:
+            -
+              type: LTRIM
+              parameters:
+                - type=
+          url: 'http://{HOST.CONN}/cgi-bin/magicBox.cgi?action=getDeviceType'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 36ff3f2dc23246058a4c1356615de124
+          name: 'Get Encode Config (RAW)'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_encode_config
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  line="Item=Value"
+                  value=line + "\n" + value
+                  return value
+            -
+              type: STR_REPLACE
+              parameters:
+                - 'table.Encode[0].'
+                - ''
+            -
+              type: CSV_TO_JSON
+              parameters:
+                - '='
+                - ''
+                - '1'
+          url: 'http://{HOST.CONN}/cgi-bin/configManager.cgi?action=getConfig&name=Encode'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 82f1d1a8ddaf4c6bb9b1986209fec050
+          name: 'Hardware Version'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_hardware_version
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: LTRIM
+              parameters:
+                - version=
+          url: 'http://{HOST.CONN}/cgi-bin/magicBox.cgi?action=getHardwareVersion'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: a0117571ccf0471da6a9446ad61ca813
+          name: 'Get Network Config (RAW)'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_network_config
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  line="Item=Value"
+                  value=line + "\n" + value
+                  return value
+            -
+              type: STR_REPLACE
+              parameters:
+                - table.Network.
+                - ''
+            -
+              type: CSV_TO_JSON
+              parameters:
+                - '='
+                - ''
+                - '1'
+          url: 'http://{HOST.CONN}/cgi-bin/configManager.cgi?action=getConfig&name=Network'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 82ba0cf0ebb34791bacf34bbb1119368
+          name: 'ONVIF Version'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_onvif_version
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: LTRIM
+              parameters:
+                - version=
+          url: 'http://{HOST.CONN}/cgi-bin/IntervideoManager.cgi?action=getVersion&Name=Onvif'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: a70af06fa0684104a7d02fc8b21e7e0e
+          name: 'Serial Number'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_serial_no
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          inventory_link: SERIALNO_A
+          preprocessing:
+            -
+              type: LTRIM
+              parameters:
+                - sn=
+          url: 'http://{HOST.CONN}/cgi-bin/magicBox.cgi?action=getSerialNo'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 60a5b01afbda4d3fa1359311553d1972
+          name: 'Software Version'
+          type: HTTP_AGENT
+          key: intelbras_cam.get_software_version
+          delay: 6h
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USUARIO}'
+          password: '{$SENHA}'
+          preprocessing:
+            -
+              type: LTRIM
+              parameters:
+                - version=
+          url: 'http://{HOST.CONN}/cgi-bin/magicBox.cgi?action=getSoftwareVersion'
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 9288ade2830a4415956e9354f151926c
+          name: 'Main Stream - Bit Rate'
+          type: DEPENDENT
+          key: intelbras_cam.main_bitrate
+          delay: '0'
+          units: bps
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="MainFormat[0].Video.BitRate")].Value.first()'
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1000'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Main
+        -
+          uuid: 20e7dd4a820c417eb1d109e25dd0376d
+          name: 'Main Stream - Bit Rate Control'
+          type: DEPENDENT
+          key: intelbras_cam.main_brcontrol
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="MainFormat[0].Video.BitRateControl")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Main
+        -
+          uuid: 511fa15e94cd42c6a5cb242026f22d6f
+          name: 'Main Stream - Compression'
+          type: DEPENDENT
+          key: intelbras_cam.main_compression
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="MainFormat[0].Video.Compression")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Main
+        -
+          uuid: 088d247251804b71a32fb3a3c2eeb684
+          name: 'Main Stream - FPS'
+          type: DEPENDENT
+          key: intelbras_cam.main_fps
+          delay: '0'
+          units: fps
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="MainFormat[0].Video.FPS")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Main
+        -
+          uuid: ebd0d2f4d5de4360ab4e917d483dd32d
+          name: 'Main Stream - Resolution'
+          type: DEPENDENT
+          key: intelbras_cam.main_resolution
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="MainFormat[0].Video.Width" || @.Item=="MainFormat[0].Video.Height")].Value'
+            -
+              type: STR_REPLACE
+              parameters:
+                - '['
+                - ''
+            -
+              type: STR_REPLACE
+              parameters:
+                - ']'
+                - ''
+            -
+              type: STR_REPLACE
+              parameters:
+                - '"'
+                - ''
+            -
+              type: STR_REPLACE
+              parameters:
+                - ','
+                - x
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Main
+        -
+          uuid: 422d4d4a3a1e4d38bcf2a95684f37a65
+          name: 'Main Stream - Stream Quality'
+          type: DEPENDENT
+          key: intelbras_cam.main_stream_quality
+          delay: '0'
+          value_type: FLOAT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="MainFormat[0].Video.Quality")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Main
+        -
+          uuid: 79891b9061d54e03b1e5f054313ca76f
+          name: 'Network DHCP Enable'
+          type: DEPENDENT
+          key: intelbras_cam.net_dhcp
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.DhcpEnable")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 38a9a57d30ef44dca614cc3d482f1990
+          name: 'Network DNS 1'
+          type: DEPENDENT
+          key: intelbras_cam.net_dns1
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.DnsServers[0]")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 3fe794420eb84c818bba6bb1b18e8719
+          name: 'Network DNS 2'
+          type: DEPENDENT
+          key: intelbras_cam.net_dns2
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.DnsServers[1]")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 473d3ea3d6644db8b7bf882c1fba74d2
+          name: 'Network Gateway'
+          type: DEPENDENT
+          key: intelbras_cam.net_gateway
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.DefaultGateway")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: f5b32c851b2343d6a8b72da5e9b3038e
+          name: 'Network IP'
+          type: DEPENDENT
+          key: intelbras_cam.net_ip
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.IPAddress")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: e09cd694e170420abdd42b05b63fd8da
+          name: 'Network MAC Address'
+          type: DEPENDENT
+          key: intelbras_cam.net_mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          inventory_link: MACADDRESS_A
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.PhysicalAddress")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 5bc67b254faf4426a1fd76da82c5d599
+          name: 'Network Subnet Mask'
+          type: DEPENDENT
+          key: intelbras_cam.net_mask
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="eth0.SubnetMask")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_network_config
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 78db00573efa4f7ea167d4b78b3c25e5
+          name: 'Sub Stream - Bit Rate'
+          type: DEPENDENT
+          key: intelbras_cam.sub_bitrate
+          delay: '0'
+          units: bps
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="ExtraFormat[0].Video.BitRate")].Value.first()'
+            -
+              type: MULTIPLIER
+              parameters:
+                - '1000'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Sub
+        -
+          uuid: a693c3b5622c4386bc2d44de131e19e2
+          name: 'Sub Stream - Bit Rate Control'
+          type: DEPENDENT
+          key: intelbras_cam.sub_brcontrol
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="ExtraFormat[0].Video.BitRateControl")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Sub
+        -
+          uuid: 2ff0e7147c9d4125bd70cac3ed306d4a
+          name: 'Sub Stream - Compression'
+          type: DEPENDENT
+          key: intelbras_cam.sub_compression
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="ExtraFormat[0].Video.Compression")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Sub
+        -
+          uuid: 4d4d590f97f049de8b2397821869d895
+          name: 'Sub Stream - FPS'
+          type: DEPENDENT
+          key: intelbras_cam.sub_fps
+          delay: '0'
+          units: fps
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="ExtraFormat[0].Video.FPS")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Sub
+        -
+          uuid: 4f31d47bf3394ac68358b822f51c31ba
+          name: 'Sub Stream - Resolution'
+          type: DEPENDENT
+          key: intelbras_cam.sub_resolution
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="ExtraFormat[0].Video.Width" || @.Item=="ExtraFormat[0].Video.Height")].Value'
+            -
+              type: STR_REPLACE
+              parameters:
+                - '['
+                - ''
+            -
+              type: STR_REPLACE
+              parameters:
+                - ']'
+                - ''
+            -
+              type: STR_REPLACE
+              parameters:
+                - '"'
+                - ''
+            -
+              type: STR_REPLACE
+              parameters:
+                - ','
+                - x
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Sub
+        -
+          uuid: 536c52a3d8e548e7b8e1db5eba9f8cc5
+          name: 'Sub Stream - Stream Quality'
+          type: DEPENDENT
+          key: intelbras_cam.sub_stream_quality
+          delay: '0'
+          value_type: FLOAT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.[?(@.Item=="ExtraFormat[0].Video.Quality")].Value.first()'
+          master_item:
+            key: intelbras_cam.get_encode_config
+          tags:
+            -
+              tag: Application
+              value: Video
+            -
+              tag: Stream
+              value: Sub
+      macros:
+        -
+          macro: '{$SENHA}'
+          value: admin
+        -
+          macro: '{$USUARIO}'
+          value: admin
+      dashboards:
+        -
+          uuid: d416b532f467430287cdb7bcbc4c3604
+          name: 'Intelbras IP Camera - Dashboard'
+          pages:
+            -
+              widgets:
+                -
+                  type: CLOCK
+                  x: '21'
+                  width: '3'
+                  height: '3'
+                -
+                  type: CLOCK
+                  x: '21'
+                  'y': '3'
+                  width: '3'
+                  height: '3'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: time_type
+                      value: '2'
+                    -
+                      type: ITEM
+                      name: itemid
+                      value:
+                        key: intelbras_cam.get_current_time
+                        host: 'Intelbras camera by HTTP'
+                -
+                  type: PLAIN_TEXT
+                  name: 'Camera Info'
+                  x: '11'
+                  'y': '2'
+                  width: '10'
+                  height: '4'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: show_as_html
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: show_lines
+                      value: '5'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: intelbras_cam.get_device_type
+                        host: 'Intelbras camera by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: intelbras_cam.net_ip
+                        host: 'Intelbras camera by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: intelbras_cam.get_serial_no
+                        host: 'Intelbras camera by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: intelbras_cam.main_fps
+                        host: 'Intelbras camera by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: intelbras_cam.main_resolution
+                        host: 'Intelbras camera by HTTP'
+                -
+                  type: PLAIN_TEXT
+                  name: 'Camera Time'
+                  x: '11'
+                  width: '10'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: show_as_html
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: show_lines
+                      value: '1'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: intelbras_cam.get_current_time
+                        host: 'Intelbras camera by HTTP'
+                -
+                  type: GRAPH_CLASSIC
+                  name: 'ICMP Ping Response Time'
+                  width: '11'
+                  height: '6'
+                  fields:
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'ICMP Ping Response Time'
+                        host: 'Intelbras camera by HTTP'

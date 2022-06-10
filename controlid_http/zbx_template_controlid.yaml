@@ -1,0 +1,1134 @@
+zabbix_export:
+  version: '5.4'
+  date: '2022-06-10T12:02:33Z'
+  groups:
+    -
+      uuid: 603f397408bc4c33be28bf2366f3d064
+      name: Equipamentos/ControleAcesso/ControlID
+  templates:
+    -
+      uuid: 764eae1870d64aef8a716d41b2ea0ada
+      template: 'Control ID - Base by HTTP'
+      name: 'Control ID - Base by HTTP'
+      description: |
+        Template base para os terminais da Control ID
+        Template coleta os dados que são mutuos entre os equipamentos, para dados especificos, adicionar os templates relativos a versao.
+        
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'ICMP Checks'
+      groups:
+        -
+          name: Equipamentos/ControleAcesso/ControlID
+      items:
+        -
+          uuid: c36df82415914199a2b27716ba9f07ae
+          name: 'Load Objects - Cards (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_cards
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.loadobjects_url + "?session=" + session;
+                var body = {
+                    "object": "cards"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          description: 'Retrieve RAW data from Load_Objects EndPoint with "cards" parameter'
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: loadobjects_url
+              value: '{$CIDURLLOADOBJECTS}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 881eb313a4464130bc839d4b1fff666a
+          name: 'Load Objects - Users (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_user
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.loadobjects_url + "?session=" + session;
+                var body = {
+                    "object": "users"
+                }
+                var response = request.post(url,JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          description: 'Retrieve RAW data from Load_Objects EndPoint with "users" parameter'
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: loadobjects_url
+              value: '{$CIDURLLOADOBJECTS}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: ccaa3a49075940a5a43bbcf97178c8fa
+          name: 'Network Gateway'
+          type: DEPENDENT
+          key: cid.net_gateway
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.gateway
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 95b9b44de0674af4867a087333b2f8ff
+          name: 'Network IP'
+          type: DEPENDENT
+          key: cid.net_ip
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.ip
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: c886a45d42224b43b66785ef60ae5465
+          name: 'Network MAC Address'
+          type: DEPENDENT
+          key: cid.net_mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          inventory_link: MACADDRESS_A
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.mac
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: f37a131778034bdfbac6cccfff1f64c0
+          name: 'Network Subnet Mask'
+          type: DEPENDENT
+          key: cid.net_mask
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.netmask
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: Network
+        -
+          uuid: 3d190b2006b7402fa9b969c04ba115d1
+          name: 'Quantidade Cards'
+          type: DEPENDENT
+          key: cid.qtde_cards
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.cards.length()
+          master_item:
+            key: cid.loadobjects_cards
+          tags:
+            -
+              tag: Application
+              value: Capacity
+        -
+          uuid: 729cbd0faae545bab356d7b9a10e9a55
+          name: 'Quantidade Users'
+          type: DEPENDENT
+          key: cid.qtde_users
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.users.length()
+          master_item:
+            key: cid.loadobjects_user
+          tags:
+            -
+              tag: Application
+              value: Capacity
+        -
+          uuid: 0c6c67427f1246cb8de726a24b310ebf
+          name: 'System Info (RAW)'
+          type: SCRIPT
+          key: cid.sysinfo_raw
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.sysinfo_url + "?session=" + session;
+                var response = request.post(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          description: 'Retrieve RAW data from System Information EndPoint'
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: sysinfo_url
+              value: '{$CIDURLSYSINFO}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 2cdcd197851a4ee3b632838a77298744
+          name: 'System Time'
+          type: DEPENDENT
+          key: cid.system_data
+          delay: '0'
+          units: unixtime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.time
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value)+10800;'
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: cd21a4e7683d40a6b7ca9debff7d860a
+          name: 'System Serial Number'
+          type: DEPENDENT
+          key: cid.system_serial
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          inventory_link: SERIALNO_A
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.serial
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 046daa3abc1d441485a057313970f414
+          name: 'System Uptime'
+          type: DEPENDENT
+          key: cid.system_uptime
+          delay: '0'
+          units: uptime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.uptime
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var input = JSON.parse(value);
+                  var response = input.seconds+input.minutes*60+input.hours*3600+input.days*86400;
+                  return response;
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: System
+        -
+          uuid: 2fa6a381106a478fb5f6744a4deb7146
+          name: 'System Version'
+          type: DEPENDENT
+          key: cid.system_version
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          inventory_link: SOFTWARE
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.version
+          master_item:
+            key: cid.sysinfo_raw
+          tags:
+            -
+              tag: Application
+              value: System
+      macros:
+        -
+          macro: '{$CIDURLLOADOBJECTS}'
+          value: /load_objects.fcgi
+          description: 'EndPoint Load Objects'
+        -
+          macro: '{$CIDURLLOGIN}'
+          value: /login.fcgi
+          description: 'EndPoint Login'
+        -
+          macro: '{$CIDURLLOGOUT}'
+          value: /logout.fcgi
+          description: 'EndPoint Logout'
+        -
+          macro: '{$CIDURLSYSINFO}'
+          value: /system_information.fcgi
+          description: 'EndPoint System Information'
+        -
+          macro: '{$SENHA}'
+          value: admin
+          description: Senha
+        -
+          macro: '{$USUARIO}'
+          value: admin
+          description: Usuario
+    -
+      uuid: 6dd26861b91742f2af8d35823c71fab3
+      template: 'Control ID - ID Access PRO by HTTP'
+      name: 'Control ID - ID Access PRO by HTTP'
+      description: |
+        Template para o terminal ID Access PRO da Control ID
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'Control ID - Base by HTTP'
+      groups:
+        -
+          name: Equipamentos/ControleAcesso/ControlID
+      items:
+        -
+          uuid: b104313b726140b39b57e6be9c21d959
+          name: 'Load Objects - Templates (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_templates
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.loadobjects_url + "?session=" + session;
+                var body = {
+                    "object": "templates"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          description: 'Retrieve RAW data from Load_Objects EndPoint with "templates" parameter'
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: loadobjects_url
+              value: '{$CIDURLLOADOBJECTS}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: ce579def8520422297e20b49b48caeb2
+          name: 'Quantidade Templates'
+          type: DEPENDENT
+          key: cid.qtde_templates
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.templates.length()
+          master_item:
+            key: cid.loadobjects_templates
+          tags:
+            -
+              tag: Application
+              value: Capacity
+    -
+      uuid: 7fc2d9ffd3734343ad6c3b4f10171997
+      template: 'Control ID - ID Block by HTTP'
+      name: 'Control ID - ID Block by HTTP'
+      description: |
+        Template para o terminal ID Block da Control ID
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'Control ID - Base by HTTP'
+      groups:
+        -
+          name: Equipamentos/ControleAcesso/ControlID
+      items:
+        -
+          uuid: 426c4e148f254707b74443c104c2f734
+          name: 'Giros a Esquerda'
+          type: DEPENDENT
+          key: cid.catrainfo_leftturn
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.catra_infos.[0].left_turns'
+          master_item:
+            key: cid.loadobjects_catrainfo
+          tags:
+            -
+              tag: Application
+              value: Catraca
+        -
+          uuid: 3d9ddf6e57e5458a8d3763bd1d82a9b2
+          name: 'Giros a Direita'
+          type: DEPENDENT
+          key: cid.catrainfo_rightturn
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.catra_infos.[0].right_turns'
+          master_item:
+            key: cid.loadobjects_catrainfo
+          tags:
+            -
+              tag: Application
+              value: Catraca
+        -
+          uuid: b9ea30da4edd489f8de3d06fbc807031
+          name: 'Load Objects - Catra Info (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_catrainfo
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe valores do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.loadobjects_url + "?session=" + session;
+                var body = {
+                    "object": "catra_infos"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: loadobjects_url
+              value: '{$CIDURLLOADOBJECTS}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 4909f2f0359b46f6a470182296850845
+          name: 'Load Objects - Templates (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_templates
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.loadobjects_url + "?session=" + session;
+                var body = {
+                    "object": "templates"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: loadobjects_url
+              value: '{$CIDURLLOADOBJECTS}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 19b83a39c2a442a889119cbc539f859a
+          name: 'Quantidade Templates'
+          type: DEPENDENT
+          key: cid.qtde_templates
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.templates.length()
+          master_item:
+            key: cid.loadobjects_templates
+          tags:
+            -
+              tag: Application
+              value: Capacity
+    -
+      uuid: 9eb4332e7dae4373adb2f3d0cf1c23b8
+      template: 'Control ID - ID Box by HTTP'
+      name: 'Control ID - ID Box by HTTP'
+      description: |
+        Template para o terminal ID Box da Control ID
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'Control ID - Base by HTTP'
+      groups:
+        -
+          name: Equipamentos/ControleAcesso/ControlID
+    -
+      uuid: 81fe40a102ee4933866cdd26e755603f
+      template: 'Control ID - ID Face by HTTP'
+      name: 'Control ID - ID Face by HTTP'
+      description: |
+        Template para o terminal ID Face da Control ID
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'Control ID - Base by HTTP'
+      groups:
+        -
+          name: Equipamentos/ControleAcesso/ControlID
+      items:
+        -
+          uuid: d6622b12ce86451787a17e1480de811c
+          name: 'Load Objects - Faces (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_faces
+          delay: 30m
+          history: 10d
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.userlistimages_url + "&session=" + session;
+                var response = request.get(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: userlistimages_url
+              value: '{$CIDURLUSERIMAGES}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: 40ae9eb1919949ddbc981b03a64ecf10
+          name: 'Quantidade Faces'
+          type: DEPENDENT
+          key: cid.qte_faces
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.user_ids.length()
+          master_item:
+            key: cid.loadobjects_faces
+          tags:
+            -
+              tag: Application
+              value: Capacity
+      macros:
+        -
+          macro: '{$CIDURLUSERIMAGES}'
+          value: '/user_list_images.fcgi?get_timestamp=0'
+          description: 'EndPoint Get User Images'
+    -
+      uuid: 904995769edd414d9205d5d945fd1255
+      template: 'Control ID - ID Flex by HTTP'
+      name: 'Control ID - ID Flex by HTTP'
+      description: |
+        Template para o terminal ID Access Flex da Control ID
+        Definir usuário e senha do equipamento nas macros do HOST
+      templates:
+        -
+          name: 'Control ID - Base by HTTP'
+      groups:
+        -
+          name: Equipamentos/ControleAcesso/ControlID
+      items:
+        -
+          uuid: d357363699634995a3d591234c118ed2
+          name: 'Load Objects - Templates (RAW)'
+          type: SCRIPT
+          key: cid.loadobjects_templates
+          delay: 30m
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.login_url;
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + params.loadobjects_url + "?session=" + session;
+                var body = {
+                    "object": "templates"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + params.logout_url + "?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          description: 'Retrieve RAW data from Load_Objects EndPoint with "templates" parameter'
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: loadobjects_url
+              value: '{$CIDURLLOADOBJECTS}'
+            -
+              name: login_url
+              value: '{$CIDURLLOGIN}'
+            -
+              name: logout_url
+              value: '{$CIDURLLOGOUT}'
+            -
+              name: password
+              value: '{$SENHA}'
+            -
+              name: username
+              value: '{$USUARIO}'
+          tags:
+            -
+              tag: Application
+              value: 'Raw Itens'
+        -
+          uuid: b2e972a185544e05a4ca51e9efd6637f
+          name: 'Quantidade Templates'
+          type: DEPENDENT
+          key: qtde_templates
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.templates.length()
+          master_item:
+            key: cid.loadobjects_templates
+          tags:
+            -
+              tag: Application
+              value: Capacity
+      macros:
+        -
+          macro: '{$INFO_TEMPLATEQTDE}'
+          value: '4500'
+          description: 'quantidade de biometrias para INFO'
+        -
+          macro: '{$INFO_USERQTDE}'
+          value: '8000'
+          description: 'quantidade de usuarios para INFO'
+        -
+          macro: '{$WARN_TEMPLATEQTDE}'
+          value: '5500'
+          description: 'quantidade de biometrias para WARN'
+        -
+          macro: '{$WARN_USERQTDE}'
+          value: '10000'
+          description: 'quantidade de usuarios para WARN'
+      dashboards:
+        -
+          uuid: f368156f5a7e4ccf88af1217823214c0
+          name: 'Control ID - ID Flex'
+          pages:
+            -
+              widgets:
+                -
+                  type: CLOCK
+                  x: '21'
+                  width: '3'
+                  height: '3'
+                -
+                  type: GRAPH_CLASSIC
+                  'y': '3'
+                  width: '8'
+                  height: '6'
+                  fields:
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'Quantidade Users'
+                        host: 'Control ID - ID Flex by HTTP'
+                -
+                  type: GRAPH_CLASSIC
+                  x: '8'
+                  'y': '3'
+                  width: '8'
+                  height: '6'
+                -
+                  type: PLAIN_TEXT
+                  name: Armazenamento
+                  x: '14'
+                  width: '7'
+                  height: '3'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: show_lines
+                      value: '3'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.qtde_cards
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.qtde_users
+                        host: 'Control ID - ID Flex by HTTP'
+                -
+                  type: PLAIN_TEXT
+                  name: 'Network Config'
+                  width: '7'
+                  height: '3'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: show_lines
+                      value: '4'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.net_gateway
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.net_ip
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.net_mac
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.net_mask
+                        host: 'Control ID - ID Flex by HTTP'
+                -
+                  type: GRAPH_CLASSIC
+                  name: 'Quantidade Cards'
+                  x: '16'
+                  'y': '3'
+                  width: '8'
+                  height: '6'
+                  fields:
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        name: 'Quantidade Cards'
+                        host: 'Control ID - ID Flex by HTTP'
+                -
+                  type: PLAIN_TEXT
+                  name: 'System Config'
+                  x: '7'
+                  width: '7'
+                  height: '3'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: show_lines
+                      value: '4'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.system_serial
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.system_data
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.system_uptime
+                        host: 'Control ID - ID Flex by HTTP'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        key: cid.system_version
+                        host: 'Control ID - ID Flex by HTTP'
+  triggers:
+    -
+      uuid: 283a9d49743f4ebcb222f8bce9291399
+      expression: 'last(/Control ID - ID Flex by HTTP/cid.qtde_users)>{$INFO_USERQTDE}'
+      name: 'Quantidade de Usuários Maior que {$INFO_USERQTDE}'
+      priority: INFO
+      description: 'Quantidade de Usuários cadastrados próximo ao limite de 10000 usuários'
+      manual_close: 'YES'
+      dependencies:
+        -
+          name: 'Quantidade de Usuários Maior que {$WARN_USERQTDE}'
+          expression: 'last(/Control ID - ID Flex by HTTP/cid.qtde_users)>{$WARN_USERQTDE}'
+    -
+      uuid: dd1c61d5bb7e4c1bbe72ed3abb3563c2
+      expression: 'last(/Control ID - ID Flex by HTTP/cid.qtde_users)>{$WARN_USERQTDE}'
+      name: 'Quantidade de Usuários Maior que {$WARN_USERQTDE}'
+      priority: WARNING
+      description: 'Quantidade de Usuários cadastrados próximo ao limite de 10000 usuários'
+      manual_close: 'YES'
+  graphs:
+    -
+      uuid: 56f7acaa11984b3a9b50cb6fa0795ab4
+      name: 'Quantidade Cards'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'Control ID - ID Flex by HTTP'
+            key: cid.qtde_cards
+    -
+      uuid: 1e2960cfea504bd5bc57c9e438902cae
+      name: 'Quantidade Users'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'Control ID - ID Flex by HTTP'
+            key: cid.qtde_users
