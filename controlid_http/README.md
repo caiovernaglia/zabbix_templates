@@ -16,7 +16,7 @@ As checagens especificas para cada equipamento são definidas no template própr
 ## Templates Linkados
 * ICMP Checks
 
-## Items coletados:
+## Items coletados
 ### Control ID - Base by HTTP
 |Application|Name|Type|Key|
 |-----------|----|----|---|
