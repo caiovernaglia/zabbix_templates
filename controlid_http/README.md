@@ -37,6 +37,37 @@ As checagens especificas para cada equipamento são definidas no template própr
 |Capacity|Quantidade Users|Dependent Item|cid.qtde_users|
 |Capacity|Quantidade Cards|Dependent Item|cid.qte_cards|
 
+### Control ID - ID Access Pro by HTTP
+|Application|Name|Type|Key|
+|-----------|----|----|---|
+|RAW|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
+|Capacity|Quantidade Templates|Dependent Item|cid.qtde_templates|
+
+### Control ID - ID Block by HTTP
+|Application|Name|Type|Key|
+|-----------|----|----|---|
+|RAW|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
+|RAW|Load Objects - Catra Info (RAW)|Script|cid.loadobjects_catrainfo|
+|Capacity|Quantidade Templates|Dependent Item|cid.qtde_templates|
+|Catraca|Giros a Direita|Dependent Item|cid.catrainfo_rightturn|
+|Catraca|Giros a Esquerda|Dependent Item|cid.catrainfo_leftturn|
+
+### Control ID - ID Box by HTTP
+Ainda não foi integrado nenhuma chave especifica
+
+### Control ID - ID Face by HTTP
+|Application|Name|Type|Key|
+|-----------|----|----|---|
+|RAW|Load Objects - Faces (RAW)|Script|cid.loadobjects_faces|
+|Capacity|Quantidade Faces|Dependent Item|cid.qtde_faces|
+
+### Control ID - ID Flex by HTTP
+|Application|Name|Type|Key|
+|-----------|----|----|---|
+|RAW|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
+|Capacity|Quantidade Templates|Dependent Item|cid.qtde_templates|
+
+
 ## TODO
 Atualmente a coleta está sendo feita por script que realiza login e retorna a session toda vez que é feito uma coleta aos itens RAW
 Estudando como alterar usando LLD no login e criação de itens prototypes para os RAW (conforme palestra de Jonathan B. Curty na Zabbix Summit Brazil 2022)
