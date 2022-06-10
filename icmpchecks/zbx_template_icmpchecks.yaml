@@ -1,0 +1,126 @@
+zabbix_export:
+  version: '5.4'
+  date: '2022-06-10T14:04:35Z'
+  groups:
+    -
+      uuid: 46f79bde25c7442d8892d370ae5187ba
+      name: Templates/Checks
+  templates:
+    -
+      uuid: 9de5be5f5cb5444d8d3b3121b1556e1f
+      template: 'ICMP Checks'
+      name: 'ICMP Checks'
+      groups:
+        -
+          name: Templates/Checks
+      items:
+        -
+          uuid: c0e18eda6db74f9383efe89ff7686043
+          name: 'ICMP Ping Status'
+          type: SIMPLE
+          key: icmpping
+          delay: 30s
+          valuemap:
+            name: 'Service state'
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: 41acec5a85a9423ba93d92e0c1448da7
+              expression: 'max(/ICMP Checks/icmpping,#5)=0'
+              name: 'Indisponível por ICMP Ping'
+              priority: HIGH
+              description: 'Últimas cinco tentativas retornaram Timeout. Verificar conectividade do dispositivo.'
+              manual_close: 'YES'
+        -
+          uuid: d73f82c0709f4616922b55bc1c5193b2
+          name: 'ICMP Loss'
+          type: SIMPLE
+          key: icmppingloss
+          delay: 30s
+          value_type: FLOAT
+          units: '%'
+          tags:
+            -
+              tag: Application
+              value: Status
+        -
+          uuid: 86877d6bf2e3448cb635a7f2242408d9
+          name: 'ICMP Response Time'
+          type: SIMPLE
+          key: icmppingsec
+          delay: 30s
+          value_type: FLOAT
+          units: s
+          tags:
+            -
+              tag: Application
+              value: Status
+          triggers:
+            -
+              uuid: e2ae3a99fcbe46819ac7a282b8df5895
+              expression: 'last(/ICMP Checks/icmppingsec)>{$ICMP_RESPONSE_TIME_WARN}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/ICMP Checks/icmppingsec,#10)<0.020'
+              name: 'ICMP Ping Response Time - Warning (> {$ICMP_RESPONSE_TIME_WARN}s)'
+              priority: WARNING
+              description: 'Último tempo de ICMP Ping Alto'
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Indisponível por ICMP Ping'
+                  expression: 'max(/ICMP Checks/icmpping,#5)=0'
+            -
+              uuid: 0f650bc6d01c4292a2db72b29ef8c55e
+              expression: 'last(/ICMP Checks/icmppingsec)>{$ICMP_RESPONSE_TIME_INFO}'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/ICMP Checks/icmppingsec,#2)<0.010'
+              name: 'Tempo de Reposta ICMP Ping Anormal (> {$ICMP_RESPONSE_TIME_INFO}s)'
+              priority: INFO
+              description: 'Último tempo de ICMP Ping Anormal'
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'ICMP Ping Response Time - Warning (> {$ICMP_RESPONSE_TIME_WARN}s)'
+                  expression: 'last(/ICMP Checks/icmppingsec)>{$ICMP_RESPONSE_TIME_WARN}'
+                  recovery_expression: 'last(/ICMP Checks/icmppingsec,#10)<0.020'
+                -
+                  name: 'Indisponível por ICMP Ping'
+                  expression: 'max(/ICMP Checks/icmpping,#5)=0'
+      tags:
+        -
+          tag: Yellen
+      macros:
+        -
+          macro: '{$ICMP_LOSS_INFO}'
+          value: '10'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_INFO}'
+          value: '0.150'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.250'
+      valuemaps:
+        -
+          uuid: be308ceba1af45279fbde990bb5b3513
+          name: 'Service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
+  graphs:
+    -
+      uuid: 4ed0b8660f424621a014798951711036
+      name: 'ICMP Ping Response Time'
+      graph_items:
+        -
+          sortorder: '1'
+          color: 199C0D
+          item:
+            host: 'ICMP Checks'
+            key: icmppingsec
