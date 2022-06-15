@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.4'
-  date: '2022-06-10T14:04:35Z'
+  date: '2022-06-15T16:43:25Z'
   groups:
     -
       uuid: 46f79bde25c7442d8892d370ae5187ba
@@ -61,7 +61,7 @@ zabbix_export:
           triggers:
             -
               uuid: e2ae3a99fcbe46819ac7a282b8df5895
-              expression: 'last(/ICMP Checks/icmppingsec)>{$ICMP_RESPONSE_TIME_WARN}'
+              expression: 'avg(/ICMP Checks/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
               recovery_mode: RECOVERY_EXPRESSION
               recovery_expression: 'last(/ICMP Checks/icmppingsec,#10)<0.020'
               name: 'ICMP Ping Response Time - Warning (> {$ICMP_RESPONSE_TIME_WARN}s)'
@@ -84,7 +84,7 @@ zabbix_export:
               dependencies:
                 -
                   name: 'ICMP Ping Response Time - Warning (> {$ICMP_RESPONSE_TIME_WARN}s)'
-                  expression: 'last(/ICMP Checks/icmppingsec)>{$ICMP_RESPONSE_TIME_WARN}'
+                  expression: 'avg(/ICMP Checks/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}'
                   recovery_expression: 'last(/ICMP Checks/icmppingsec,#10)<0.020'
                 -
                   name: 'Indisponível por ICMP Ping'
