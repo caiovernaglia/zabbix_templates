@@ -6,7 +6,7 @@ Os equipamentos utilizam informações básicas dos equipamentos através do Con
 
 As checagens especificas para cada equipamento são definidas no template próprio
 
-## Equipamentos Integrados:
+## Equipamentos Testados:
 * ID Access PRO
 * ID Block
 * ID Box
@@ -23,9 +23,9 @@ As checagens especificas para cada equipamento são definidas no template própr
 |Status|ICMP Loss|Simple Check|icmppingloss|
 |Status|ICMP Ping Status|Simple Check|icmpping|
 |Status|ICMP Response Time|Simple Check|icmppingsec|
-|RAW|System Info (RAW)|Script|cid.sysinfo_raw|
-|RAW|Load Objects - Users (RAW)|Script|cid.loadobjects_user|
-|RAW|Load Objects - Cards (RAW)|Script|cid.loadobjects_cards|
+|RAW Itens|System Info (RAW)|Script|cid.sysinfo_raw|
+|RAW Itens|Load Objects - Users (RAW)|Script|cid.loadobjects_user|
+|RAW Itens|Load Objects - Cards (RAW)|Script|cid.loadobjects_cards|
 |System|System Serial Number|Dependent Item|cid.system_serial|
 |System|System Time|Dependent Item|cid.system_data|
 |System|System Uptime|Dependent Item|cid.system_uptime|
@@ -40,14 +40,14 @@ As checagens especificas para cada equipamento são definidas no template própr
 ### Control ID - ID Access Pro by HTTP
 |Application|Name|Type|Key|
 |-----------|----|----|---|
-|RAW|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
+|RAW Itens|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
 |Capacity|Quantidade Templates|Dependent Item|cid.qtde_templates|
 
 ### Control ID - ID Block by HTTP
 |Application|Name|Type|Key|
 |-----------|----|----|---|
-|RAW|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
-|RAW|Load Objects - Catra Info (RAW)|Script|cid.loadobjects_catrainfo|
+|RAW Itens|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
+|RAW Itens|Load Objects - Catra Info (RAW)|Script|cid.loadobjects_catrainfo|
 |Capacity|Quantidade Templates|Dependent Item|cid.qtde_templates|
 |Catraca|Giros a Direita|Dependent Item|cid.catrainfo_rightturn|
 |Catraca|Giros a Esquerda|Dependent Item|cid.catrainfo_leftturn|
@@ -58,13 +58,13 @@ Ainda não foi integrado nenhuma chave especifica
 ### Control ID - ID Face by HTTP
 |Application|Name|Type|Key|
 |-----------|----|----|---|
-|RAW|Load Objects - Faces (RAW)|Script|cid.loadobjects_faces|
+|RAW Itens|Load Objects - Faces (RAW)|Script|cid.loadobjects_faces|
 |Capacity|Quantidade Faces|Dependent Item|cid.qtde_faces|
 
 ### Control ID - ID Flex by HTTP
 |Application|Name|Type|Key|
 |-----------|----|----|---|
-|RAW|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
+|RAW Itens|Load Objects - Templates (RAW)|Script|cid.loadobjects_templates|
 |Capacity|Quantidade Templates|Dependent Item|cid.qtde_templates|
 
 
