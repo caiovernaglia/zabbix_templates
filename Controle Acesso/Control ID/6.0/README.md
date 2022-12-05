@@ -61,6 +61,8 @@ No configuration is needed.
 |RAW|Control ID ACS: Get Catra Info|-|Script|controlid_acs.get_catrainfo|
 
 ### Control ID - ID Box by HTTP
+|Group|Name|Description|Type|Key and additional info|
+|-----|----|-----------|----|-----------------------|
 |System|Control ID ACS: Serial Number|-|Dependent|controlid_acs.serialnumber|
 |System|Control ID ACS: System Time|-|Dependent|controlid_acs.systemdata|
 |System|Control ID ACS: System Uptime|-|Dependent|controlid_acs.uptime|
@@ -74,6 +76,8 @@ No configuration is needed.
 |RAW|Control ID ACS: Get System Info|-|Script|controlid_acs.get_info|
 
 ### Control ID - ID Face by HTTP
+|Group|Name|Description|Type|Key and additional info|
+|-----|----|-----------|----|-----------------------|
 |System|Control ID ACS: Serial Number|-|Dependent|controlid_acs.serialnumber|
 |System|Control ID ACS: System Time|-|Dependent|controlid_acs.systemdata|
 |System|Control ID ACS: System Uptime|-|Dependent|controlid_acs.uptime|
