@@ -269,10 +269,10 @@ zabbix_export:
             -
               uuid: 8170a5e2e2354dbc826d68c7bc5567c6
               expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber))>0'
-              name: 'Hikvision Access Control: Equipament has been replaced'
-              event_name: 'Hikvision Access Control: Equipament has been replaced (new serial number received)'
+              name: 'Hikvision Access Control: Equipment has been replaced'
+              event_name: 'Hikvision Access Control: Equipment has been replaced (new serial number received)'
               priority: INFO
-              description: 'Equipament serial number has changed. Ack to close.'
+              description: 'Equipment serial number has changed. Ack to close.'
               manual_close: 'YES'
               tags:
                 -
