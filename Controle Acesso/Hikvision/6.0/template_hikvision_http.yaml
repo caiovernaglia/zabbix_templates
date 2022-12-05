@@ -1,0 +1,543 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-12-05T12:23:22Z'
+  groups:
+    -
+      uuid: 3f806503cba74d6c92dea4f64f803065
+      name: 'Templates/Access Control'
+  templates:
+    -
+      uuid: dbcbf3d669c54e32af0eb68ed2031119
+      template: 'Hikvision access controll by HTTP'
+      name: 'Hikvision access controll by HTTP'
+      description: |
+        Template para monitoramento de controladoras Faciais Hikvision
+        Testado nas seguintes controladores:
+        * DS-K1T671
+        * DS-K1T341
+        * DS-K1T343
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Access Control'
+      items:
+        -
+          uuid: f6efbbe1b93d45d69c1d32e4c4888efe
+          name: 'Hikvision ACS: Device Model'
+          type: DEPENDENT
+          key: hikvision_acs.deviceModel
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.DeviceInfo.model
+          master_item:
+            key: hikvision_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 09e911ad23454d90a99512e511804ee2
+          name: 'Hikvision ACS: Device Name'
+          type: DEPENDENT
+          key: hikvision_acs.deviceName
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.DeviceInfo.deviceName
+          master_item:
+            key: hikvision_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: a4bffa5608da465989aafd8815cef9bf
+          name: 'Hikvision ACS: Firmware Build'
+          type: DEPENDENT
+          key: hikvision_acs.firmwarebuild
+          delay: '0'
+          trends: '0'
+          value_type: LOG
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.DeviceInfo.firmwareReleasedDate
+          master_item:
+            key: hikvision_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 23e054a9d66a4e7ea9e0f614f695962f
+              expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.firmwarebuild,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.firmwarebuild,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.firmwarebuild))>0'
+              name: 'Hikvision Access Control: Firmware build has changed'
+              event_name: 'Hikvision Access Control: Firmware build has changed (new build: {ITEM.VALUE})'
+              priority: INFO
+              description: 'Firmware build has changed. Ack to close.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+        -
+          uuid: bbefdc4098ae46c8ac2458a4d5257281
+          name: 'Hikvision ACS: Firmware Version'
+          type: DEPENDENT
+          key: hikvision_acs.firmwareversion
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.DeviceInfo.firmwareVersion
+          master_item:
+            key: hikvision_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: eac6c2b62c26439a9e3a6983a81e8fad
+              expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion))>0'
+              name: 'Hikvision Access Control: Firmware version has changed'
+              event_name: 'Hikvision Access Control: Firmware version has changed (new version: {ITEM.VALUE})'
+              priority: INFO
+              description: 'Firmware version has changed. Ack to close.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+        -
+          uuid: df2819c13e58425c869386353d53fed6
+          name: 'Hikvision ACS: Get Faces Count'
+          type: HTTP_AGENT
+          key: hikvision_acs.get_facecount
+          delay: 1h
+          authtype: DIGEST
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          description: 'Get Faces Count'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.recordDataNumber
+          url: 'http://{HOST.CONN}:{$HIKVISION_ISAPI_PORT}/ISAPI/Intelligent/FDLib/Count?format=json&FDID=1&faceLibType=blackFD'
+          status_codes: '200, 401'
+          tags:
+            -
+              tag: component
+              value: capacity
+          triggers:
+            -
+              uuid: 1c1025ad542245a59f604632819579cd
+              expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.get_facecount,#1)>={$FACECOUNT_INFO}'
+              name: 'Hikvision Access Control: Faces count greater than {$FACECOUNT_INFO}'
+              opdata: 'Current faces count: {ITEM.LASTVALUE1}'
+              priority: INFO
+              description: 'Faces count greater than info limit.'
+              dependencies:
+                -
+                  name: 'Hikvision Access Control: Faces count greater than {$FACECOUNT_WARN}'
+                  expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.get_facecount,#1)>={$FACECOUNT_WARN}'
+              tags:
+                -
+                  tag: component
+                  value: capacity
+                -
+                  tag: scope
+                  value: performance
+            -
+              uuid: 8c810fdf440b4993b0ef4c36b9cb7e52
+              expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.get_facecount,#1)>={$FACECOUNT_WARN}'
+              name: 'Hikvision Access Control: Faces count greater than {$FACECOUNT_WARN}'
+              opdata: 'Current faces count: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'Faces count greater than warning limit.'
+              tags:
+                -
+                  tag: component
+                  value: capacity
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: 23f8ced5214a43c2a9eedba2f933029d
+          name: 'Hikvision ACS: Get device info'
+          type: HTTP_AGENT
+          key: hikvision_acs.get_info
+          delay: 12h
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          description: 'Get device information'
+          preprocessing:
+            -
+              type: CHECK_NOT_SUPPORTED
+              parameters:
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '{"html":{"head":{"title":"Connection error"}}}'
+            -
+              type: XML_TO_JSON
+              parameters:
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '{"html":{"head":{"title":"Connection error"}}}'
+          url: 'http://{HOST.CONN}:{$HIKVISION_ISAPI_PORT}/ISAPI/System/deviceInfo'
+          status_codes: '200, 401'
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: 92d5218e74fc49fdadce3b586eac1fc1
+          name: 'Hikvision ACS: Get User Count'
+          type: HTTP_AGENT
+          key: hikvision_acs.get_usercount
+          delay: 1h
+          authtype: DIGEST
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          description: 'Get User Count'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.UserInfoCount.userNumber
+          url: 'http://{HOST.CONN}:{$HIKVISION_ISAPI_PORT}/ISAPI/AccessControl/UserInfo/Count?format=json'
+          status_codes: '200, 401'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: f49ff67c12eb48e1a37476e92f2983c9
+          name: 'Hikvision ACS: MAC Address'
+          type: DEPENDENT
+          key: hikvision_acs.mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          master_item:
+            key: hikvision_acs.get_info
+          tags:
+            -
+              tag: component
+              value: network
+        -
+          uuid: 810804e342dd4ceab45bca0ae4a311e4
+          name: 'Hikvision ACS: Serial Number'
+          type: DEPENDENT
+          key: hikvision_acs.serialnumber
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.DeviceInfo.serialNumber
+          master_item:
+            key: hikvision_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 8170a5e2e2354dbc826d68c7bc5567c6
+              expression: 'last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber))>0'
+              name: 'Hikvision Access Control: Equipament has been replaced'
+              event_name: 'Hikvision Access Control: Equipament has been replaced (new serial number received)'
+              priority: INFO
+              description: 'Equipament serial number has changed. Ack to close.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+      tags:
+        -
+          tag: class
+          value: device
+        -
+          tag: target
+          value: access-control
+        -
+          tag: target
+          value: hikvision
+      macros:
+        -
+          macro: '{$FACECOUNT_INFO}'
+          value: '2000'
+          description: 'Info threshold of faces registered'
+        -
+          macro: '{$FACECOUNT_WARN}'
+          value: '2500'
+          description: 'Warning threshold of faces registered'
+        -
+          macro: '{$HIKVISION_ISAPI_PORT}'
+          value: '80'
+          description: 'ISAPI Port'
+        -
+          macro: '{$PASSWORD}'
+          type: SECRET_TEXT
+          description: Password
+        -
+          macro: '{$USER}'
+          value: admin
+          description: Username
+      dashboards:
+        -
+          uuid: 17e5220a46c649bca015aded603b0b2f
+          name: 'Hikvision ACS'
+          pages:
+            -
+              widgets:
+                -
+                  type: GRAPH_CLASSIC
+                  'y': '4'
+                  width: '11'
+                  height: '6'
+                  fields:
+                    -
+                      type: GRAPH
+                      name: graphid
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        name: 'Hikvision ACS: Capacity'
+                -
+                  type: GRAPH_CLASSIC
+                  x: '11'
+                  'y': '4'
+                  width: '13'
+                  height: '6'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: source_type
+                      value: '1'
+                    -
+                      type: ITEM
+                      name: itemid
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: icmppingsec
+                -
+                  type: CLOCK
+                  x: '20'
+                  width: '4'
+                  height: '4'
+                  hide_header: 'YES'
+                -
+                  type: ITEM
+                  name: Availability
+                  x: '8'
+                  width: '3'
+                  height: '4'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: adv_conf
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: decimal_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: value_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: time_size
+                      value: '10'
+                    -
+                      type: ITEM
+                      name: itemid
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: icmpping
+                -
+                  type: PLAIN_TEXT
+                  name: 'Device Info'
+                  width: '8'
+                  height: '4'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: show_lines
+                      value: '5'
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.deviceModel
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.deviceName
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.firmwarebuild
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.firmwareversion
+                    -
+                      type: ITEM
+                      name: itemids
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.serialnumber
+                -
+                  type: ITEM
+                  name: 'Faces Count'
+                  x: '17'
+                  width: '3'
+                  height: '4'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: adv_conf
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: decimal_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: value_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: time_size
+                      value: '10'
+                    -
+                      type: ITEM
+                      name: itemid
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.get_facecount
+                -
+                  type: ITEM
+                  name: 'Ping Response Time'
+                  x: '11'
+                  width: '3'
+                  height: '4'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: adv_conf
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: decimal_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: value_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: time_size
+                      value: '10'
+                    -
+                      type: ITEM
+                      name: itemid
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: icmppingsec
+                -
+                  type: ITEM
+                  name: 'Users Count'
+                  x: '14'
+                  width: '3'
+                  height: '4'
+                  fields:
+                    -
+                      type: INTEGER
+                      name: adv_conf
+                      value: '1'
+                    -
+                      type: INTEGER
+                      name: decimal_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: value_size
+                      value: '25'
+                    -
+                      type: INTEGER
+                      name: time_size
+                      value: '10'
+                    -
+                      type: ITEM
+                      name: itemid
+                      value:
+                        host: 'Hikvision access controll by HTTP'
+                        key: hikvision_acs.get_usercount
+      valuemaps:
+        -
+          uuid: d31f7c3962404a30b3bc2a6252b26a35
+          name: 'Login Status'
+          mappings:
+            -
+              value: '0'
+              newvalue: OK
+            -
+              value: '1'
+              newvalue: Unauthorized
+            -
+              value: '2'
+              newvalue: 'Connection Error'
+  graphs:
+    -
+      uuid: d5a998aa3cdd4914beb3ea3675021932
+      name: 'Hikvision ACS: Capacity'
+      graph_items:
+        -
+          drawtype: GRADIENT_LINE
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'Hikvision access controll by HTTP'
+            key: hikvision_acs.get_usercount
+        -
+          sortorder: '1'
+          drawtype: BOLD_LINE
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'Hikvision access controll by HTTP'
+            key: hikvision_acs.get_facecount

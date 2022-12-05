@@ -47,8 +47,7 @@ No configuration is needed.
 |High ICMP ping response time|-|avg(/Hikvision access controll by HTTP/icmppingsec,5m)>{$ICMP_RESPONSE_TIME_WARN}|
 |Unavailable by ICMP Ping|-|max(/Hikvision access controll by HTTP/icmpping,#3)=0|
 |Hikvision ACS: Equipament has been replaced|-|last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.serialnumber))>0|
-|Hikvision ACS: Firmware version has changed|-|	
-last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion))>0|
+|Hikvision ACS: Firmware version has changed|-|last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.firmwareversion))>0|
 |Hikvision ACS: Firmware build has changed|-|last(/Hikvision access controll by HTTP/hikvision_acs.firmwarebuild,#1)<>last(/Hikvision access controll by HTTP/hikvision_acs.firmwarebuild,#2) and length(last(/Hikvision access controll by HTTP/hikvision_acs.firmwarebuild))>0|
 |Hikvision ACS: Faces count greater than {$FACECOUNT_INFO}|-|last(/Hikvision access controll by HTTP/hikvision_acs.get_facecount,#1)>={$FACECOUNT_INFO}|
 |Hikvision ACS: Faces count greater than {$FACECOUNT_WARN}|-|last(/Hikvision access controll by HTTP/hikvision_acs.get_facecount,#1)>={$FACECOUNT_WARN}|
