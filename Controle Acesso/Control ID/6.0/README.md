@@ -100,11 +100,16 @@ Ainda não implantado
 
 ## TODO
 Implantar monitoramento para a ID UHF.
+
 Template para o ID Flex ainda não foi migrado para o Zabbix 6.0 (motivo: sem device em produção). Realizar a migração para disponibilizar para outros usuários.
+
 Melhorar coleta de dados. Atualmente está sendo feito por script consumindo a API dos equipamentos.
+
 Criar triggers de alarme.
+
 Verificar e implantar monitoração do SIP no ID FACE.
 
 ## Observações
 Developed by: Caio Vernaglia Barros
+
 Feel free to use and change as needed!
