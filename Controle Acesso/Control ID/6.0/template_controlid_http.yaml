@@ -1,0 +1,1482 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-12-05T11:19:09Z'
+  groups:
+    -
+      uuid: 3f806503cba74d6c92dea4f64f803065
+      name: 'Templates/Access Control'
+  templates:
+    -
+      uuid: e59b7565f059465d8402b2a4b4f4c5c2
+      template: 'Control ID - ID Access PRO by HTTP'
+      name: 'Control ID - ID Access PRO by HTTP'
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Access Control'
+      items:
+        -
+          uuid: 8e91d27bbb30416da55301f99caeaee8
+          name: 'Control ID ACS: System Version'
+          type: DEPENDENT
+          key: controlid_acs.firmwareversion
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.version
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 30c84a3709c948b5979bb71d6106bab7
+          name: 'Control ID ACS: Get Cards'
+          type: SCRIPT
+          key: controlid_acs.get_cards
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "cards"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.cards.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 4b846b6561eb40938536aa92d04e293c
+          name: 'Control ID ACS: Get System Info'
+          type: SCRIPT
+          key: controlid_acs.get_info
+          delay: 2h
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/system_information.fcgi?session=" + session;
+                var response = request.post(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: 1fdd0d4ae169405b89b1543cd5578d31
+          name: 'Control ID ACS: Get Templates'
+          type: SCRIPT
+          key: controlid_acs.get_templates
+          delay: 30m
+          history: 1w
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "templates"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.templates.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: f71bd7e70cb44a60923732cbc6440754
+          name: 'Control ID ACS: Get Users'
+          type: SCRIPT
+          key: controlid_acs.get_users
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "users"
+                }
+                var response = request.post(url,JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.users.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: c4372e07a0804c2f9dcaf33565ddde92
+          name: 'Control ID ACS: MAC Address'
+          type: DEPENDENT
+          key: controlid_acs.mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.mac
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: network
+        -
+          uuid: 2c35bfa2fbb44cdd92b55c19faaa062b
+          name: 'Control ID ACS: Serial Number'
+          type: DEPENDENT
+          key: controlid_acs.serialnumbet
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.serial
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 8231c9ce07c344cd92a3a9c83da5bda6
+          name: 'Control ID ACS: System Time'
+          type: DEPENDENT
+          key: controlid_acs.systemdata
+          delay: '0'
+          units: unixtime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.time
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value)+10800;'
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: ba1a24afb8ab4ef9854e579ef6053929
+          name: 'Control ID ACS: System Uptime'
+          type: DEPENDENT
+          key: controlid_acs.uptime
+          delay: '0'
+          units: uptime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.uptime
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var input = JSON.parse(value);
+                  var response = input.seconds+input.minutes*60+input.hours*3600+input.days*86400;
+                  return response;
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+      tags:
+        -
+          tag: class
+          value: device
+        -
+          tag: target
+          value: access-control
+        -
+          tag: target
+          value: control-id
+      macros:
+        -
+          macro: '{$PASSWORD}'
+          type: SECRET_TEXT
+          description: Password
+        -
+          macro: '{$USER}'
+          value: admin
+          description: Username
+    -
+      uuid: b9a3011bac1541818d8f3e33aaac48c1
+      template: 'Control ID - ID Block by HTTP'
+      name: 'Control ID - ID Block by HTTP'
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Access Control'
+      items:
+        -
+          uuid: c36a966d0f4e4446acac763fa5e325e0
+          name: 'Control ID ACS: Giros a Direita'
+          type: DEPENDENT
+          key: controlid_acs.catra_direita
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.catra_infos.[0].right_turns'
+          master_item:
+            key: controlid_acs.get_catrainfo
+          tags:
+            -
+              tag: component
+              value: catraca
+        -
+          uuid: 9be857efa0304d9a88897f6de671eb42
+          name: 'Control ID ACS: Giros a Esquerda'
+          type: DEPENDENT
+          key: controlid_acs.catra_esquerda
+          delay: '0'
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.catra_infos.[0].left_turns'
+          master_item:
+            key: controlid_acs.get_catrainfo
+          tags:
+            -
+              tag: component
+              value: catraca
+        -
+          uuid: d0b510870cb6461a8a2ad01f669c03d5
+          name: 'Control ID ACS: System Version'
+          type: DEPENDENT
+          key: controlid_acs.firmwareversion
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.version
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 0aca40ed9dee4055bceff6648c1c36d9
+          name: 'Control ID ACS: Get Cards'
+          type: SCRIPT
+          key: controlid_acs.get_cards
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "cards"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.cards.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 72de1edf77c84c5eab4c06e29ca27b77
+          name: 'Control ID ACS: Get Catra Info'
+          type: SCRIPT
+          key: controlid_acs.get_catrainfo
+          delay: 2h
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe valores do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/lod_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "catra_infos"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: fb64838d4c2c47e2b36430d576dfb08e
+          name: 'Control ID ACS: Get System Info'
+          type: SCRIPT
+          key: controlid_acs.get_info
+          delay: 2h
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/system_information.fcgi?session=" + session;
+                var response = request.post(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: 1a36e006e9bc4bf38b70840a376ec83b
+          name: 'Control ID ACS: Get Templates'
+          type: SCRIPT
+          key: controlid_acs.get_templates
+          delay: 30m
+          history: 1w
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "templates"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.templates.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 652b0e83fc2c41ff81620d5365eb39d6
+          name: 'Control ID ACS: Get Users'
+          type: SCRIPT
+          key: controlid_acs.get_users
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "users"
+                }
+                var response = request.post(url,JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.users.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 3663ce61aee94af7b0f17f61345f7083
+          name: 'Control ID ACS: MAC Address'
+          type: DEPENDENT
+          key: controlid_acs.mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.mac
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: network
+        -
+          uuid: d5cdfff730d34df99d941a6f46888ed9
+          name: 'Control ID ACS: Serial Number'
+          type: DEPENDENT
+          key: controlid_acs.serialnumbet
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.serial
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: fa2ed71af2054f1baa32ad378aaf92a1
+          name: 'Control ID ACS: System Time'
+          type: DEPENDENT
+          key: controlid_acs.systemdata
+          delay: '0'
+          units: unixtime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.time
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value)+10800;'
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: abcde34db2414bd59bc1f5d2abeab910
+          name: 'Control ID ACS: System Uptime'
+          type: DEPENDENT
+          key: controlid_acs.uptime
+          delay: '0'
+          units: uptime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.uptime
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var input = JSON.parse(value);
+                  var response = input.seconds+input.minutes*60+input.hours*3600+input.days*86400;
+                  return response;
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+      tags:
+        -
+          tag: class
+          value: device
+        -
+          tag: target
+          value: access-control
+        -
+          tag: target
+          value: control-id
+      macros:
+        -
+          macro: '{$PASSWORD}'
+          type: SECRET_TEXT
+          description: Password
+        -
+          macro: '{$USER}'
+          value: admin
+          description: Username
+    -
+      uuid: bcd594e93c4f417cb2f3de57464a3c5e
+      template: 'Control ID - ID Box by HTTP'
+      name: 'Control ID - ID Box by HTTP'
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Access Control'
+      items:
+        -
+          uuid: 0388c8b53bc54dd3bcc5abd8419f637d
+          name: 'Control ID ACS: System Version'
+          type: DEPENDENT
+          key: controlid_acs.firmwareversion
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.version
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: dd409c17e4174e27a682a8c89c7bced9
+          name: 'Control ID ACS: Get Cards'
+          type: SCRIPT
+          key: controlid_acs.get_cards
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "cards"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.cards.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 8db8f215030a4a14a753b8f548c0f4fb
+          name: 'Control ID ACS: Get System Info'
+          type: SCRIPT
+          key: controlid_acs.get_info
+          delay: 2h
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/system_information.fcgi?session=" + session;
+                var response = request.post(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: 01d01bc7dc1f4685860dbc8e443c788f
+          name: 'Control ID ACS: Get Users'
+          type: SCRIPT
+          key: controlid_acs.get_users
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "users"
+                }
+                var response = request.post(url,JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.users.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: f4876996041241e5aa45e01453978e1d
+          name: 'Control ID ACS: MAC Address'
+          type: DEPENDENT
+          key: controlid_acs.mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.mac
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: network
+        -
+          uuid: 715741e3748f4d06a2cdd32cf3527999
+          name: 'Control ID ACS: Serial Number'
+          type: DEPENDENT
+          key: controlid_acs.serialnumbet
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.serial
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 42ade675cfdb404899fa98e4a3c5d62e
+          name: 'Control ID ACS: System Time'
+          type: DEPENDENT
+          key: controlid_acs.systemdata
+          delay: '0'
+          units: unixtime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.time
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value)+10800;'
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 07ddd3375de7495d869df865e5e3f203
+          name: 'Control ID ACS: System Uptime'
+          type: DEPENDENT
+          key: controlid_acs.uptime
+          delay: '0'
+          units: uptime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.uptime
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var input = JSON.parse(value);
+                  var response = input.seconds+input.minutes*60+input.hours*3600+input.days*86400;
+                  return response;
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+      tags:
+        -
+          tag: class
+          value: device
+        -
+          tag: target
+          value: access-control
+        -
+          tag: target
+          value: control-id
+      macros:
+        -
+          macro: '{$PASSWORD}'
+          type: SECRET_TEXT
+          description: Password
+        -
+          macro: '{$USER}'
+          value: admin
+          description: Username
+    -
+      uuid: 993dfb9d6b4645a193c581cf30d24883
+      template: 'Control ID - ID Face by HTTP'
+      name: 'Control ID - ID Face by HTTP'
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Access Control'
+      items:
+        -
+          uuid: 9db82f2763b14093904f2ec536feb103
+          name: 'Control ID ACS: System Version'
+          type: DEPENDENT
+          key: controlid_acs.firmwareversion
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.version
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: de26020d1411475ea0e9062cf6993506
+          name: 'Control ID ACS: Get Cards'
+          type: SCRIPT
+          key: controlid_acs.get_cards
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "cards"
+                }
+                var response = request.post(url, JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.cards.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 056ccdcb2c404aa6b4cd938b98642613
+          name: 'Control ID ACS: Get Faces'
+          type: SCRIPT
+          key: controlid_acs.get_faces
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/user_list_images.fcgi?get_timestamp=0&session=" + session;
+                var response = request.get(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.user_ids.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: 16fbf2b7a2d84c7c900621ebc8d2c629
+          name: 'Control ID ACS: Get System Info'
+          type: SCRIPT
+          key: controlid_acs.get_info
+          delay: 2h
+          history: 1w
+          trends: '0'
+          value_type: TEXT
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/system_information.fcgi?session=" + session;
+                var response = request.post(url);
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: raw
+        -
+          uuid: 892dcd99c7094bb697ff7060afadebe0
+          name: 'Control ID ACS: Get Users'
+          type: SCRIPT
+          key: controlid_acs.get_users
+          delay: 30m
+          params: |
+            //recebe parametros do zabbix
+            var params = JSON.parse(value);
+            
+            //executa login e retorna session
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/login.fcgi";
+            var body = {
+                "login": params.username,
+                "password": params.password
+            };
+            var session = JSON.parse(request.post(url, JSON.stringify(body))).session;
+            
+            //coleta dados desejados
+            if (session) {
+                var request = new HttpRequest();
+                request.addHeader('Content-Type: application/json');
+                var url = params.host + "/load_objects.fcgi?session=" + session;
+                var body = {
+                    "object": "users"
+                }
+                var response = request.post(url,JSON.stringify(body));
+            }
+            
+            //executa logout
+            var request = new HttpRequest();
+            request.addHeader('Content-Type: application/json');
+            var url = params.host + "/logout.fcgi?session=" + session;
+            request.post(url);
+            
+            //retorna resposta para o zabbix
+            return response;
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.users.length()
+          parameters:
+            -
+              name: host
+              value: '{HOST.CONN}'
+            -
+              name: username
+              value: '{$USER}'
+            -
+              name: password
+              value: '{$PASSWORD}'
+          tags:
+            -
+              tag: component
+              value: capacity
+        -
+          uuid: f3deb69516d948ab97bc6aaa7e626785
+          name: 'Control ID ACS: MAC Address'
+          type: DEPENDENT
+          key: controlid_acs.mac
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.network.mac
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: network
+        -
+          uuid: b8a2b76bd08243a9a66014b963d2b164
+          name: 'Control ID ACS: Serial Number'
+          type: DEPENDENT
+          key: controlid_acs.serialnumbet
+          delay: '0'
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.serial
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: f24496924cb24b709009b01678a62155
+          name: 'Control ID ACS: System Time'
+          type: DEPENDENT
+          key: controlid_acs.systemdata
+          delay: '0'
+          units: unixtime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.time
+            -
+              type: JAVASCRIPT
+              parameters:
+                - 'return JSON.parse(value)+10800;'
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: fb80b921defc4df982cd3b090622d220
+          name: 'Control ID ACS: System Uptime'
+          type: DEPENDENT
+          key: controlid_acs.uptime
+          delay: '0'
+          units: uptime
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - $.uptime
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  var input = JSON.parse(value);
+                  var response = input.seconds+input.minutes*60+input.hours*3600+input.days*86400;
+                  return response;
+          master_item:
+            key: controlid_acs.get_info
+          tags:
+            -
+              tag: component
+              value: system
+      tags:
+        -
+          tag: class
+          value: device
+        -
+          tag: target
+          value: access-control
+        -
+          tag: target
+          value: control-id
+      macros:
+        -
+          macro: '{$PASSWORD}'
+          type: SECRET_TEXT
+          description: Password
+        -
+          macro: '{$USER}'
+          value: admin
+          description: Username
