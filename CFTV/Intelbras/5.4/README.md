@@ -14,6 +14,7 @@ Utilizada a documentação de API da Intelbras (em teoria, é para funcinar em q
 
 ## Itens coletados
 |Application|Name|Type|Key|
+|-----------|----|----|---|
 |RAW Itens|Get Encode Config (RAW)|HTTP agent|intelbras_cam.get_encode_config|
 |RAW Itens|Get Network Config (RAW)|HTTP agent|intelbras_cam.get_network_config|
 |System|Channel Title|HTTP agent|intelbras_cam.get_channel_title|
